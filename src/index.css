@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&family=JetBrains+Mono:wght@400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-io-blue: #4285F4;
+  --color-io-red: #EA4335;
+  --color-io-yellow: #FBBC04;
+  --color-io-green: #34A853;
+  --color-bg-dark: #050505;
+}
+
+:root {
+  background-color: var(--color-bg-dark);
+  color: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply m-0 p-0 overflow-hidden bg-bg-dark selection:bg-io-blue/30 text-white font-sans;
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+}
+
+@keyframes beam {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(66, 133, 244, 0.6), 
+                 0 0 40px rgba(66, 133, 244, 0.4), 
+                 0 0 60px rgba(66, 133, 244, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(66, 133, 244, 0.8), 
+                 0 0 60px rgba(66, 133, 244, 0.6), 
+                 0 0 100px rgba(66, 133, 244, 0.4);
+  }
+}
+
+.neon-glow {
+  animation: beam 4s ease-in-out infinite;
+}
+
+.header-label {
+  @apply text-[11px] tracking-[0.2em] uppercase text-[#888] font-medium;
+}
+
+.pill {
+  @apply border border-white/15 px-4 py-1.5 rounded-full text-xs bg-white/5 backdrop-blur-md flex items-center gap-2;
+}
+
+.neural-line {
+  @apply absolute h-[1px];
+  background: linear-gradient(90deg, rgba(66,133,244,0) 0%, rgba(66,133,244,0.3) 50%, rgba(66,133,244,0) 100%);
+  transform-origin: left center;
+}
+
+.dashed-orbit {
+  @apply absolute border border-dashed rounded-full pointer-events-none;
+}
+
+.neural-gradient {
+  background: radial-gradient(circle at center, rgba(66, 133, 244, 0.1) 0%, transparent 70%);
+}
