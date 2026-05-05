@@ -13,7 +13,11 @@ interface Particle {
   color: string;
 }
 
-export default function ParticleNetwork() {
+interface ParticleNetworkProps {
+  isLaunched?: boolean;
+}
+
+export default function ParticleNetwork({ isLaunched }: ParticleNetworkProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: 0, y: 0, active: false });
   const colors = ['#4285F4', '#EA4335', '#FBBC04', '#34A853'];
@@ -27,7 +31,7 @@ export default function ParticleNetwork() {
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 100;
+    const particleCount = 150;
     const connectionDistance = 150;
 
     const resize = () => {
@@ -42,7 +46,7 @@ export default function ParticleNetwork() {
       const centerY = canvas.height / 2;
 
       for (let i = 0; i < particleCount; i++) {
-        const radius = Math.random() * 300 + 100;
+        const radius = Math.random() * 400 + 100;
         const angle = Math.random() * Math.PI * 2;
         particles.push({
           x: centerX + Math.cos(angle) * radius,
@@ -66,17 +70,22 @@ export default function ParticleNetwork() {
       const centerY = canvas.height / 2;
 
       particles.forEach((p, i) => {
-        // Orbit logic
-        p.angle += 0.002;
+        // Orbit logic - speeds up when launched
+        p.angle += isLaunched ? 0.02 : 0.002;
+        if (isLaunched) {
+          p.radius += 2; // Particles fly outwards
+        }
+        
         const targetX = centerX + Math.cos(p.angle) * p.radius;
         const targetY = centerY + Math.sin(p.angle) * p.radius;
 
         // Smoothly move towards orbit target
-        p.x += (targetX - p.x) * 0.05;
-        p.y += (targetY - p.y) * 0.05;
+        const speedRatio = isLaunched ? 0.3 : 0.05;
+        p.x += (targetX - p.x) * speedRatio;
+        p.y += (targetY - p.y) * speedRatio;
 
-        // Mouse interaction
-        if (mouseRef.current.active) {
+        // Mouse interaction (disabled when launched for cleaner effect)
+        if (mouseRef.current.active && !isLaunched) {
           const dx = mouseRef.current.x - p.x;
           const dy = mouseRef.current.y - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);

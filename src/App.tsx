@@ -11,42 +11,22 @@ import ParticleNetwork from './components/ParticleNetwork';
 export default function App() {
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [time, setTime] = useState({ m: 10, s: 0 });
+  const [count, setCount] = useState(10);
 
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => {
-      setTime(prev => {
-        let { m, s } = prev;
-        if (m === 0 && s === 0) return prev;
-        s--;
-        if (s < 0) { s = 59; m--; }
-        return { m, s };
-      });
+      setCount(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <main className="relative min-h-screen bg-bg-dark overflow-hidden flex flex-col items-center justify-between font-sans selection:bg-io-blue/30">
-      <ParticleNetwork />
+      <ParticleNetwork isLaunched={count === 0} />
       
       {/* Background Neural Gradient */}
       <div className="absolute inset-0 neural-gradient pointer-events-none" />
-
-      {/* Decorative Dashed Orbits */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="dashed-orbit w-[400px] h-[400px] border-io-blue/20" 
-        />
-        <motion.div 
-          animate={{ rotate: -360 }}
-          transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-          className="dashed-orbit w-[600px] h-[600px] border-io-green/10" 
-        />
-      </div>
 
       {/* Top Navigation */}
       <nav className="w-full p-10 flex justify-between items-center z-20 relative">
@@ -63,47 +43,89 @@ export default function App() {
       </nav>
 
       {/* Main Centerpiece */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mounted && (
-          <section className="relative z-10 flex flex-col items-center justify-center flex-1">
-            <div className="header-label mb-[-20px] transition-all duration-700 opacity-60">Minutes to Commencement</div>
+          <section className="relative z-10 flex flex-col items-center justify-center flex-1 w-full">
+            {/* Background Orbits - Now anchored to this section's center */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                className="dashed-orbit w-[450px] h-[450px] border-io-blue/20" 
+              />
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+                className="dashed-orbit w-[650px] h-[650px] border-io-green/10" 
+              />
+            </div>
+
+            <div className="header-label mb-[-40px] z-20 opacity-60">
+              {count === 0 ? "Sequence Complete" : "Seconds to Commencement"}
+            </div>
             
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              key={Math.ceil((time.m * 60 + time.s) / 60)}
-              className="relative cursor-pointer group"
+              animate={{ 
+                opacity: 1, 
+                scale: count === 0 ? [1, 1.2, 1] : 1,
+                rotate: count === 0 ? [0, 5, -5, 0] : 0
+              }}
+              transition={{ 
+                duration: count === 0 ? 0.5 : 0.3,
+                ease: "easeOut"
+              }}
+              key={count}
+              className="relative cursor-pointer group flex items-center justify-center min-w-[400px] min-h-[400px]"
               onMouseEnter={() => setHovered(true)}
               onMouseLeave={() => setHovered(false)}
             >
-              <h1 className="font-sans font-black text-[320px] leading-none tracking-tighter neon-glow text-white select-none">
-                {Math.max(0, Math.ceil((time.m * 60 + time.s) / 60))}
-              </h1>
+              {count === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center"
+                >
+                  <h1 className="font-sans font-black text-8xl md:text-9xl neon-glow text-white tracking-tighter text-center">
+                    GOOGLE<br />I/O
+                  </h1>
+                  <motion.div 
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="header-label mt-8 text-io-blue"
+                  >
+                    Event Initiated
+                  </motion.div>
+                </motion.div>
+              ) : (
+                <h1 className="font-sans font-black text-[320px] leading-[0.8] neon-glow text-white select-none z-10">
+                  {count}
+                </h1>
+              )}
 
-              {/* Hover effect particles */}
+              {/* Glowing Background (Reactive) */}
               <motion.div 
                 animate={{ 
-                  scale: hovered ? 1.2 : 1,
-                  opacity: hovered ? 0.4 : 0.1
+                  scale: (hovered || count === 0) ? 1.5 : 1,
+                  opacity: (hovered || count === 0) ? 0.6 : 0.15,
+                  backgroundColor: count === 0 ? ['#4285F4', '#EA4335', '#FBBC04', '#34A853', '#4285F4'] : '#4285F4'
                 }}
-                className="absolute inset-0 bg-io-blue rounded-full blur-[100px] -z-10 transition-all duration-700"
+                transition={{
+                  backgroundColor: { duration: 4, repeat: Infinity, ease: "linear" }
+                }}
+                className="absolute w-[300px] h-[300px] bg-io-blue rounded-full blur-[120px] -z-10 transition-all duration-700"
               />
             </motion.div>
-
-            {/* Sub-counters */}
-            <div className="flex gap-10 mt-[-20px] items-start">
-              {[
-                { label: "Minutes", value: time.m, color: "text-io-green" },
-                { label: "Seconds", value: time.s, color: "text-io-red" }
-              ].map((item, i) => (
-                <div key={item.label} className="text-center group">
-                  <div className={`text-3xl font-semibold tracking-tight transition-colors ${item.color}`}>
-                    {item.value.toString().padStart(2, '0')}
-                  </div>
-                  <div className="header-label text-[9px] mt-1 group-hover:text-white transition-colors">{item.label}</div>
-                </div>
-              ))}
-            </div>
+            
+            {/* White-out Flash on Launch */}
+            {count === 0 && (
+              <motion.div
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="fixed inset-0 bg-white z-[100] pointer-events-none"
+              />
+            )}
           </section>
         )}
       </AnimatePresence>
